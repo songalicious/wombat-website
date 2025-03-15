@@ -16,6 +16,7 @@
             font-family: 'Times New Roman', serif;
             color: white;
             position: relative;
+            overflow: hidden;
         }
         .rainbow {
             text-align: center;
@@ -57,14 +58,14 @@
 
         function randomizePosition() {
             const elements = document.querySelectorAll('.rainbow, .ip');
-            const verticalOffset = 100;
+            const verticalOffset = 10;
             elements.forEach((element, index) => {
-                const left = window.innerWidth / 2 + getRandomPosition(-50, 50);
-                element.style.left = left + 'px';
+                const left = window.innerWidth / 2 + getRandomPosition(-10, 10);
+                element.style.left = `${left}px`;
                 if (index === 0) {
-                    element.style.top = verticalOffset + 'px';
+                    element.style.top = `${verticalOffset + 5}vh`;
                 } else {
-                    element.style.top = verticalOffset + (index * 60) + 'px';
+                    element.style.top = `${verticalOffset + 12 + (index * 5)}vh`;
                 }
             });
         }
@@ -80,11 +81,11 @@
                         document.getElementById('coordinates').textContent = `                 ${latitude} , ${longitude}`;
                     })
                     .catch(() => {
-                        document.getElementById('coordinates').textContent = 'i forgot these';
+                        document.getElementById('coordinates').textContent = 'location unavailable';
                     });
             })
             .catch(() => {
-                document.getElementById('publicIp').textContent = 'i forgot it';
+                document.getElementById('publicIp').textContent = 'ip unavailable';
             });
 
         window.onload = randomizePosition;
