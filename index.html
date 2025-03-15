@@ -3,67 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>wombat website</title>
+  <title>goats</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
   <style>
     body {
       margin: 0;
-      background-color: #0d0d0d; 
+      background-color: #0d0d0d;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      position: relative;
     }
-
+    .gallery-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-gap: 20px;
+      width: 90vw;
+      max-width: 1600px;
+      margin: auto;
+    }
     .tilt-container {
-      width: 800px;
-      height: 640px;
-      display: inline-block;
-    }
-
-    .tilt-container img {
-      display: block;
       width: 100%;
-      height: 100%;
-      object-fit: fill; 
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
       border-radius: 10px;
     }
-
-    .close-button {
-      position: absolute;
+    .tilt-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .menu-button {
+      position: fixed;
       bottom: 10px;
       right: 10px;
       width: 50px;
       height: 50px;
-      background-color: #0d0d0d; 
+      background-color: #0d0d0d;
       border: none;
       border-radius: 50%;
       cursor: pointer;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      transition: height 0.2s ease-in-out, border-radius 0.2s ease-in-out;
     }
-
-    .close-button:hover {
+    .menu-button:hover {
       background-color: #1a1a1a;
+    }
+    .menu-button.active {
+      height: 180px;
+      border-radius: 25px;
+    }
+    .menu-icons {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 50px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+      z-index: 101;
+    }
+    .menu-icons.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .menu-icon {
+      font-size: 24px;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      .gallery-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
     }
   </style>
 </head>
 <body>
-  <div class="tilt-container" data-tilt>
-    <img src="wombat.webp" alt="Wombat">
+  <div class="gallery-container">
+    <div class="tilt-container" data-tilt><img src="goat1.webp"></div>
+    <div class="tilt-container" data-tilt><img src="goat2.webp"></div>
+    <div class="tilt-container" data-tilt><img src="goat3.webp"></div>
+    <div class="tilt-container" data-tilt><img src="goat4.webp"></div>
+    <div class="tilt-container" data-tilt><img src="goat5.webp"></div>
+    <div class="tilt-container" data-tilt><img src="goat6.webp"></div>
+    <div class="tilt-container" data-tilt><img src="goat7.webp"></div>
+    <div class="tilt-container" data-tilt><img src="goat8.webp"></div>
   </div>
-
-  <button class="close-button" onclick="window.close()"></button>
-
+  <button class="menu-button" id="menuButton"></button>
+  <div class="menu-icons" id="menuIcons">
+    <a href="https://rep.farm/goats" class="menu-icon">🐐</a>
+    <a href="https://rep.farm/api" class="menu-icon">🕒</a>
+    <a href="https://rep.farm/wombat" class="menu-icon">😎</a>
+  </div>
   <script>
-   
     document.addEventListener("DOMContentLoaded", () => {
-      VanillaTilt.init(document.querySelector(".tilt-container"), {
+      VanillaTilt.init(document.querySelectorAll(".tilt-container"), {
         max: 25,  
         speed: 400,
         reverse: false 
+      });
+      const menuButton = document.getElementById("menuButton");
+      const menuIcons = document.getElementById("menuIcons");
+      menuButton.addEventListener("click", () => {
+        menuButton.classList.toggle("active");
+        menuIcons.classList.toggle("active");
+      });
+      document.addEventListener("click", (event) => {
+        if (!menuButton.contains(event.target) && !menuIcons.contains(event.target)) {
+          menuButton.classList.remove("active");
+          menuIcons.classList.remove("active");
+        }
       });
     });
   </script>
