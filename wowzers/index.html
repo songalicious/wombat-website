@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wowzers</title>
+    <title>LOL</title>
     <style>
         body {
             margin: 0;
@@ -24,6 +24,7 @@
             letter-spacing: 5px;
             animation: colorRotate 1s linear infinite;
             position: absolute;
+            white-space: nowrap;
         }
         @keyframes colorRotate {
             0% { color: #ff0000; }
@@ -42,6 +43,7 @@
             font-family: 'Times New Roman', serif;
             animation: colorRotate 1s linear infinite;
             position: absolute;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -70,25 +72,32 @@
             });
         }
 
-        fetch('https://api.ipify.org?format=json')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('publicIp').textContent = ' ' + data.ip;
-                fetch(`https://ipinfo.io/${data.ip}/json`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const [latitude, longitude] = data.loc.split(',');
-                        document.getElementById('coordinates').textContent = `                 ${latitude} , ${longitude}`;
-                    })
-                    .catch(() => {
-                        document.getElementById('coordinates').textContent = 'location unavailable';
-                    });
-            })
-            .catch(() => {
-                document.getElementById('publicIp').textContent = 'ip unavailable';
-            });
+        function getIP() {
+            return fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => data.ip)
+                .catch(() => 'ip unavailable');
+        }
 
-        window.onload = randomizePosition;
+        function getGeoLocation(ip) {
+            return fetch(`https://ipinfo.io/${ip}/json`)
+                .then(response => response.json())
+                .then(data => {
+                    const [latitude, longitude] = data.loc.split(',');
+                    return `${latitude}, ${longitude}`;
+                })
+                .catch(() => 'location unavailable');
+        }
+
+        (async function() {
+            const publicIp = await getIP();
+            document.getElementById('publicIp').textContent = publicIp;
+
+            const coordinates = await getGeoLocation(publicIp);
+            document.getElementById('coordinates').textContent = coordinates;
+
+            randomizePosition();
+        })();
     </script>
 </body>
 </html>
