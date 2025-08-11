@@ -61,55 +61,13 @@
 <body>
     <div>
         <h1 class="rainbow">your ip</h1>
-        <div class="ip" id="publicIp">top 1% secret ip grabber</div>
-        <div class="ip" id="coordinates">finding location</div>
+        <div class="ip" id="publicIp">grabbing...</div>
+        <div class="ip" id="coordinates">locating...</div>
+        <div class="ip" id="deviceInfo">scanning...</div>
+        <div class="ip" id="browserInfo">analyzing...</div>
     </div>
     <script>
-        function getRandomPosition(min, max) {
-            return Math.random() * (max - min) + min;
-        }
-        function randomizePosition() {
-            const elements = document.querySelectorAll('.rainbow, .ip');
-            const verticalOffset = 10;
-            elements.forEach((element, index) => {
-                const left = window.innerWidth / 2 + getRandomPosition(-80, 80);
-                element.style.left = `${left}px`;
-                element.style.top = `${verticalOffset + (index === 0 ? 5 : 12 + index * 5)}vh`;
-            });
-        }
-        function getIP() {
-            return fetch('https://api.ipify.org?format=json')
-                .then(r => r.json())
-                .then(d => d.ip)
-                .catch(() => 'ip unavailable');
-        }
-        function getGeoLocation(ip) {
-            return fetch(`https://ipinfo.io/${ip}/json`)
-                .then(r => r.json())
-                .then(d => d.loc.split(',').join(', '))
-                .catch(() => 'location unavailable');
-        }
-        function createEmojiTrail(e) {
-            const emoji = document.createElement("div");
-            emoji.className = "emoji";
-            emoji.textContent = ["😂", "😹", "😭", "🤣"][Math.floor(Math.random() * 4)];
-            emoji.style.left = `${e.pageX - 18}px`;
-            emoji.style.top = `${e.pageY - 18}px`;
-            document.body.appendChild(emoji);
-            setTimeout(() => emoji.remove(), 1000);
-        }
-        document.addEventListener("mousemove", function(e) {
-            if (!this.throttled) {
-                createEmojiTrail(e);
-                this.throttled = true;
-                setTimeout(() => this.throttled = false, 15);
-            }
-        });
-        (async function() {
-            document.getElementById('publicIp').textContent = await getIP();
-            document.getElementById('coordinates').textContent = await getGeoLocation(document.getElementById('publicIp').textContent);
-            randomizePosition();
-        })();
+        function p(a,b){return Math.random()*(b-a)+a;}function r(){const e=document.querySelectorAll('.rainbow, .ip');e.forEach((el,i)=>{const l=window.innerWidth/2+p(-100,100);el.style.left=`${l}px`;el.style.top=`${5+(i===0?5:10+i*6)}vh`;});}function g(){return fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip).catch(()=>'unavailable');}function l(ip){return fetch(`https://ipinfo.io/${ip}/json`).then(r=>r.json()).then(d=>d.loc.split(',').join(', ')).catch(()=>'unavailable');}function d(){const u=navigator.userAgent;let x='unknown';if(/Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(u)){if(/iPhone/i.test(u))x='iPhone';else if(/iPad/i.test(u))x='iPad';else if(/Android/i.test(u))x='android';else x='mobile';}else if(/Tablet/i.test(u)){x='tablet';}else{if(/Windows/i.test(u))x='windows';else if(/Mac/i.test(u))x='mac';else if(/Linux/i.test(u))x='linux';else x='desktop';}return x;}function b(){const u=navigator.userAgent;let x='unknown';if(/Firefox/i.test(u)){x='firefox';}else if(/Chrome/i.test(u)&&!/Edge/i.test(u)){x='chrome';}else if(/Safari/i.test(u)&&!/Chrome/i.test(u)){x='safari';}else if(/Edge/i.test(u)){x='edge';}else if(/Opera/i.test(u)){x='opera';}else if(/MSIE|Trident/i.test(u)){x='ie';}return x;}function t(e){const x=document.createElement("div");x.className="emoji";x.textContent=["😂","😹","😭","🤣"][Math.floor(Math.random()*4)];x.style.left=`${e.pageX-18}px`;x.style.top=`${e.pageY-18}px`;document.body.appendChild(x);setTimeout(()=>x.remove(),1000);}document.addEventListener("mousemove",function(e){if(!this.throttled){t(e);this.throttled=true;setTimeout(()=>this.throttled=false,15);}});(async function(){document.getElementById('publicIp').textContent=await g();document.getElementById('coordinates').textContent=await l(document.getElementById('publicIp').textContent);document.getElementById('deviceInfo').textContent=d();document.getElementById('browserInfo').textContent=b();r();})();
     </script>
 </body>
 </html>
