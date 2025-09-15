@@ -2,342 +2,174 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🧩</title>
   <style>
     body {
-      margin: 0;
       background: black;
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-      overflow: hidden;
+      align-items: flex-start;
+      margin: 0;
+      padding: 20px;
+      color: white;
       font-family: Arial, sans-serif;
     }
-    .game-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
     canvas {
-      image-rendering: pixelated;
-      border: 2px solid #333;
+      background: black;
+      display: block;
+      margin-right: 20px;
     }
-    #timer {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      font-family: monospace;
-      font-size: 14px;
-      color: white;
-    }
-    .menu-button {
-      position: absolute;
-      bottom: -50px;
-      right: 0;
-      width: 40px;
-      height: 40px;
-      background-color: #030303;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      z-index: 100;
-      transition: width 0.2s ease-in-out, border-radius 0.2s ease-in-out;
-    }
-    .menu-button:hover {
-      background-color: #1a1a1a;
-    }
-    .menu-button.active {
-      width: 260px;
-      border-radius: 20px;
-    }
-    .menu-icons {
-      position: absolute;
-      bottom: -50px;
-      right: 0;
-      height: 40px;
-      width: 260px;
-      display: flex;
-      justify-content: space-evenly;
-      align-items: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease-in-out;
-      z-index: 101;
-    }
-    .menu-icons.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-    .menu-icon {
-      width: 30px;
-      height: 30px;
-      font-size: 18px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #1a1a1a;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .menu-icon:active {
-      background: #333;
+    #sidebar {
+      width: 200px;
     }
   </style>
 </head>
 <body>
-  <div class="game-container">
-    <canvas id="tetris" width="300" height="500"></canvas>
-    <button class="menu-button" id="menuButton"></button>
-    <div class="menu-icons" id="menuIcons">
-      <div class="menu-icon" data-action="left">⬅️</div>
-      <div class="menu-icon" data-action="right">➡️</div>
-      <div class="menu-icon" data-action="rotate">🔄</div>
-      <div class="menu-icon" data-action="hard">💥</div>
-      <div class="menu-icon" data-action="soft">⬇️</div>
-      <div class="menu-icon" data-action="trash">🗑️</div>
-      <div class="menu-icon" data-action="restart">♻️</div>
-    </div>
+  <canvas id="tetris"></canvas>
+  <div id="sidebar">
+    <h2>Time</h2>
+    <div id="time">0s</div>
   </div>
-  <div id="timer">20.00</div>
+
   <script>
     const canvas = document.getElementById("tetris");
     const context = canvas.getContext("2d");
-    context.scale(25, 25);
-    const matrixes = {
-      I: [[1,1,1,1]],
-      J: [[0,1],[0,1],[1,1]],
-      L: [[1,0],[1,0],[1,1]],
-      O: [[1,1],[1,1]],
-      S: [[0,1,1],[1,1,0]],
-      T: [[1,1,1],[0,1,0]],
-      Z: [[1,1,0],[0,1,1]],
-    };
-    function createPiece(type) {
-      return matrixes[type];
+    const cellSize = 30;
+    const cols = 10, rows = 20;
+    canvas.width = cols * cellSize;
+    canvas.height = rows * cellSize;
+
+    const shapes = [
+      [[1,1,1,1]],
+      [[1,1],[1,1]],
+      [[0,1,0],[1,1,1]],
+      [[1,0,0],[1,1,1]],
+      [[0,0,1],[1,1,1]],
+      [[1,1,0],[0,1,1]],
+      [[0,1,1],[1,1,0]],
+    ];
+
+    function newPiece() {
+      const shape = shapes[Math.floor(Math.random()*shapes.length)];
+      const gray = 220 + Math.floor(Math.random()*10 - 5);
+      const color = `rgb(${Math.min(255,gray)},${Math.min(255,gray)},${Math.min(255,gray)})`;
+      return {shape, x: Math.floor(cols/2 - shape[0].length/2), y: 0, color};
     }
-    function drawMatrix(matrix, offset, ctx=context) {
-      ctx.fillStyle = "white";
-      matrix.forEach((row, y) => {
-        row.forEach((value, x) => {
-          if (value) ctx.fillRect(x + offset.x, y + offset.y, 1, 1);
-        });
-      });
+
+    function rotate(shape) {
+      return shape[0].map((_,i) => shape.map(row => row[i])).reverse();
     }
-    function drawArena(arena) {
-      arena.forEach((row, y) => {
-        row.forEach((value, x) => {
-          if (value !== 0) {
-            context.fillStyle = "white";
-            context.fillRect(x, y, 1, 1);
-          }
-        });
-      });
-    }
-    function merge(arena, player) {
-      player.matrix.forEach((row, y) => {
-        row.forEach((value, x) => {
-          if (value) arena[y + player.pos.y][x + player.pos.x] = 1;
-        });
-      });
-    }
-    function collide(arena, player) {
-      const m = player.matrix, o = player.pos;
-      for (let y = 0; y < m.length; ++y) {
-        for (let x = 0; x < m[y].length; ++x) {
-          if (m[y][x] && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) {
-            return true;
+
+    function validPosition(piece, adjX=0, adjY=0) {
+      for (let y=0; y<piece.shape.length; y++) {
+        for (let x=0; x<piece.shape[y].length; x++) {
+          if (piece.shape[y][x]) {
+            const newX = piece.x + x + adjX;
+            const newY = piece.y + y + adjY;
+            if (newX < 0 || newX >= cols || newY >= rows || (newY >= 0 && grid[newY][newX])) {
+              return false;
+            }
           }
         }
       }
-      return false;
+      return true;
     }
-    function arenaSweep() {
-      let linesCleared = 0;
-      outer: for (let y = arena.length -1; y >= 0; --y) {
-        for (let x = 0; x < arena[y].length; ++x) {
-          if (arena[y][x] === 0) continue outer;
-        }
-        arena.splice(y, 1);
-        arena.unshift(new Array(arena[0].length).fill(0));
-        ++y;
-        linesCleared++;
-      }
-      if (linesCleared > 0) timeLeft += linesCleared * 3000;
-    }
-    function rotate(matrix, dir) {
-      const N = matrix.length, M = matrix[0].length, result = [];
-      for (let y = 0; y < M; ++y) {
-        result[y] = [];
-        for (let x = 0; x < N; ++x) {
-          result[y][x] = dir > 0 ? matrix[N - 1 - x][y] : matrix[x][M - 1 - y];
-        }
-      }
-      return result;
-    }
-    function playerDrop() {
-      player.pos.y++;
-      if (collide(arena, player)) {
-        player.pos.y--;
-        merge(arena, player);
-        arenaSweep();
-        playerReset();
-        canTrash = true;
-      }
-      dropCounter = 0;
-    }
-    function playerMove(dir) {
-      player.pos.x += dir;
-      if (collide(arena, player)) player.pos.x -= dir;
-    }
-    function playerReset() {
-      const pieces = "TJLOSZI";
-      player.matrix = createPiece(pieces[pieces.length * Math.random() | 0]);
-      player.pos.y = 0;
-      player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
-      if (collide(arena, player)) {
-        arena.forEach(row => row.fill(0));
-        timeLeft = 20000;
-      }
-    }
-    function playerRotate(dir) {
-      const rotated = rotate(player.matrix, dir);
-      const pos = player.pos.x;
-      let offset = 1;
-      player.matrix = rotated;
-      while (collide(arena, player)) {
-        player.pos.x += offset;
-        offset = -(offset + (offset > 0 ? 1 : -1));
-        if (offset > rotated[0].length) {
-          player.matrix = rotate(player.matrix, -dir);
-          player.pos.x = pos;
-          return;
-        }
-      }
-    }
-    function drawGhost() {
-      const ghost = { pos: {...player.pos}, matrix: player.matrix };
-      while (!collide(arena, ghost)) ghost.pos.y++;
-      ghost.pos.y--;
-      if (ghost.pos.y === player.pos.y) return;
-      context.globalAlpha = 0.3;
-      context.strokeStyle = "white";
-      context.lineWidth = 0.05;
-      const edges = [];
-      ghost.matrix.forEach((row, y) => {
-        row.forEach((v, x) => {
-          if (v) {
-            const gx = ghost.pos.x + x, gy = ghost.pos.y + y;
-            if (!row[x-1]) edges.push([[gx,gy],[gx,gy+1]]);
-            if (!row[x+1]) edges.push([[gx+1,gy],[gx+1,gy+1]]);
-            if (!ghost.matrix[y-1] || !ghost.matrix[y-1][x]) edges.push([[gx,gy],[gx+1,gy]]);
-            if (!ghost.matrix[y+1] || !ghost.matrix[y+1][x]) edges.push([[gx,gy+1],[gx+1,gy+1]]);
+
+    function freeze(piece) {
+      for (let y=0; y<piece.shape.length; y++) {
+        for (let x=0; x<piece.shape[y].length; x++) {
+          if (piece.shape[y][x]) {
+            grid[piece.y+y][piece.x+x] = piece.color;
           }
-        });
-      });
-      edges.forEach(e=>{
-        context.beginPath();
-        context.moveTo(e[0][0], e[0][1]);
-        context.lineTo(e[1][0], e[1][1]);
-        context.stroke();
-      });
-      context.globalAlpha = 1;
+        }
+      }
     }
-    function draw() {
-      context.fillStyle = "black";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      drawArena(arena);
-      drawGhost();
-      drawMatrix(player.matrix, player.pos);
+
+    function clearLines() {
+      for (let y=rows-1; y>=0; y--) {
+        if (grid[y].every(cell => cell)) {
+          grid.splice(y,1);
+          grid.unshift(Array(cols).fill(0));
+          y++;
+        }
+      }
     }
-    function update(time = 0) {
+
+    function drawGrid() {
+      for (let y=0; y<rows; y++) {
+        for (let x=0; x<cols; x++) {
+          if (grid[y][x]) {
+            context.fillStyle = grid[y][x];
+            context.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+          }
+        }
+      }
+    }
+
+    function drawPiece(piece) {
+      for (let y=0; y<piece.shape.length; y++) {
+        for (let x=0; x<piece.shape[y].length; x++) {
+          if (piece.shape[y][x]) {
+            context.fillStyle = piece.color;
+            context.fillRect((piece.x+x)*cellSize, (piece.y+y)*cellSize, cellSize, cellSize);
+          }
+        }
+      }
+    }
+
+    let grid = Array.from({length: rows}, () => Array(cols).fill(0));
+    let currentPiece = newPiece();
+    let dropCounter = 0;
+    let dropInterval = 500;
+    let lastTime = 0;
+    let startTime = Date.now();
+    let frozenTime = null;
+    let gameOver = false;
+
+    function update(time=0) {
       const deltaTime = time - lastTime;
       lastTime = time;
-      dropCounter += deltaTime;
-      if (dropCounter > dropInterval) playerDrop();
-      timeLeft -= deltaTime;
-      document.getElementById("timer").textContent = (timeLeft/1000).toFixed(2);
-      draw();
-      requestAnimationFrame(update);
-    }
-    function createMatrix(w, h) {
-      const matrix = [];
-      while (h--) matrix.push(new Array(w).fill(0));
-      return matrix;
-    }
-    const arena = createMatrix(12, 20);
-    const player = { pos: {x:0, y:0}, matrix: null };
-    let dropCounter = 0, dropInterval = 1000, lastTime = 0;
-    let timeLeft = 20000, canTrash = true;
-    document.addEventListener("keydown", event => {
-      if (event.keyCode === 37) playerMove(-1);
-      else if (event.keyCode === 39) playerMove(1);
-      else if (event.keyCode === 40) playerDrop();
-      else if (event.keyCode === 38) playerRotate(1);
-      else if (event.keyCode === 32) {
-        while (!collide(arena, player)) player.pos.y++;
-        player.pos.y--;
-        merge(arena, player);
-        arenaSweep();
-        playerReset();
-        timeLeft += 1000;
-        canTrash = true;
-      } else if (event.keyCode === 80 || event.keyCode === 82) {
-        if (canTrash) {
-          playerReset();
-          timeLeft -= 5000;
-          canTrash = false;
-        }
-      } else if (event.keyCode === 9) {
-        event.preventDefault();
-        arena.forEach(row => row.fill(0));
-        timeLeft = 20000;
-        playerReset();
-      }
-    });
-    const menuButton = document.getElementById("menuButton");
-    const menuIcons = document.getElementById("menuIcons");
-    menuButton.addEventListener("click", () => {
-      menuButton.classList.toggle("active");
-      menuIcons.classList.toggle("active");
-    });
-    menuIcons.addEventListener("click", (e) => {
-      if (e.target.classList.contains("menu-icon")) {
-        const action = e.target.dataset.action;
-        if (action === "left") playerMove(-1);
-        if (action === "right") playerMove(1);
-        if (action === "rotate") playerRotate(1);
-        if (action === "hard") {
-          while (!collide(arena, player)) player.pos.y++;
-          player.pos.y--;
-          merge(arena, player);
-          arenaSweep();
-          playerReset();
-          timeLeft += 1000;
-          canTrash = true;
-        }
-        if (action === "soft") playerDrop();
-        if (action === "trash") {
-          if (canTrash) {
-            playerReset();
-            timeLeft -= 5000;
-            canTrash = false;
+      if (!gameOver) {
+        dropCounter += deltaTime;
+        if (dropCounter > dropInterval) {
+          dropCounter = 0;
+          if (validPosition(currentPiece,0,1)) {
+            currentPiece.y++;
+          } else {
+            freeze(currentPiece);
+            clearLines();
+            currentPiece = newPiece();
+            if (!validPosition(currentPiece)) {
+              gameOver = true;
+              frozenTime = Math.floor((Date.now() - startTime)/1000);
+            }
           }
         }
-        if (action === "restart") {
-          arena.forEach(row => row.fill(0));
-          timeLeft = 20000;
-          playerReset();
-        }
+      }
+      context.clearRect(0,0,canvas.width,canvas.height);
+      drawGrid();
+      if (!gameOver) drawPiece(currentPiece);
+
+      const elapsed = gameOver ? frozenTime : Math.floor((Date.now() - startTime)/1000);
+      document.getElementById("time").textContent = elapsed + "s";
+
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener("keydown", event => {
+      if (gameOver) return;
+      if (event.key === "ArrowLeft" && validPosition(currentPiece,-1,0)) {
+        currentPiece.x--;
+      } else if (event.key === "ArrowRight" && validPosition(currentPiece,1,0)) {
+        currentPiece.x++;
+      } else if (event.key === "ArrowDown" && validPosition(currentPiece,0,1)) {
+        currentPiece.y++;
+      } else if (event.key === "ArrowUp") {
+        const rotated = {shape: rotate(currentPiece.shape), x: currentPiece.x, y: currentPiece.y, color: currentPiece.color};
+        if (validPosition(rotated)) currentPiece = rotated;
       }
     });
-    playerReset();
+
     update();
   </script>
 </body>
