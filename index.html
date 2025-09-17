@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>wombat</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -28,6 +29,11 @@
       height: 100%;
       object-fit: fill; 
       border-radius: 10px;
+      transition: opacity 1s ease; /* smooth fade */
+    }
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
     }
 
     .menu-button {
@@ -48,7 +54,7 @@
       background-color: #1a1a1a;
     }
     .menu-button.active {
-      height: 180px;  /* Expands upward */
+      height: 180px;  
       border-radius: 25px;
     }
 
@@ -59,7 +65,7 @@
       width: 50px;
       height: 180px; 
       display: flex;
-      flex-direction: column; /* Stack icons vertically */
+      flex-direction: column; 
       justify-content: space-around;
       align-items: center;
       opacity: 0;
@@ -102,7 +108,8 @@
       
       const menuButton = document.getElementById("menuButton");
       const menuIcons = document.getElementById("menuIcons");
-      
+      const wombatImage = document.getElementById("wombatImage");
+
       menuButton.addEventListener("click", () => {
         menuButton.classList.toggle("active");
         menuIcons.classList.toggle("active");
@@ -114,16 +121,73 @@
           menuIcons.classList.remove("active");
         }
       });
-      
-      let clickCount = 0;
-      const wombatImage = document.getElementById("wombatImage");
-      
+
+      let wombatClicks = 0;
+      let tunaClicks = 0;
+      let emptyClicks = 0;
+      let state = "wombat";
+      let confettiPlayed = false;
+
       wombatImage.addEventListener("click", () => {
-        clickCount++;
-        if (clickCount === 10) {
-          wombatImage.src = "tuna.webp";
+        if (state === "wombat") {
+          wombatClicks++;
+          if (wombatClicks >= 5) {
+            wombatImage.src = "tuna.webp";
+            state = "tuna";
+            if (!confettiPlayed) {
+              launchConfetti();
+              confettiPlayed = true;
+            }
+          }
+        } else if (state === "tuna") {
+          tunaClicks++;
+          if (tunaClicks >= 3) {
+            wombatImage.classList.add("hidden");
+            state = "gone";
+          }
         }
       });
+
+      document.addEventListener("click", (event) => {
+        if (state === "gone" && !wombatImage.contains(event.target)) {
+          emptyClicks++;
+          if (emptyClicks >= 10) {
+            wombatImage.src = "wombat.webp";
+            wombatImage.classList.remove("hidden");
+            state = "revived";
+          }
+        }
+      });
+
+      function launchConfetti() {
+        var duration = 15 * 250;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
+
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        var interval = setInterval(function() {
+          var timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          var particleCount = 150 * (timeLeft / duration);
+          confetti({ 
+            ...defaults, 
+            particleCount, 
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } 
+          });
+          confetti({ 
+            ...defaults, 
+            particleCount, 
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } 
+          });
+        }, 250);
+      }
     });
   </script>
 </body>
