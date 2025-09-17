@@ -81,7 +81,7 @@
 </head>
 <body>
   <div class="tilt-container" data-tilt>
-    <img src="wombat.webp" alt="Wombat">
+    <img src="wombat.webp" alt="Wombat" id="wombatImage">
   </div>
 
   <button class="menu-button" id="menuButton"></button>
@@ -114,8 +114,17 @@
           menuIcons.classList.remove("active");
         }
       });
+      
+      let clickCount = 0;
+      const wombatImage = document.getElementById("wombatImage");
+      
+      wombatImage.addEventListener("click", () => {
+        clickCount++;
+        if (clickCount === 10) {
+          wombatImage.src = "tuna.webp";
+        }
+      });
     });
   </script>
 </body>
 </html>
-
