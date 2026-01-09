@@ -87,7 +87,7 @@
 </head>
 <body>
   <div class="tilt-container" data-tilt>
-    <img src="wombat.webp" alt="Wombat" id="wombatImage">
+    <img src="tuna.webp" alt="Wombat" id="wombatImage">
   </div>
 
   <button class="menu-button" id="menuButton"></button>
@@ -152,7 +152,7 @@
         if (state === "gone" && !wombatImage.contains(event.target)) {
           emptyClicks++;
           if (emptyClicks >= 10) {
-            wombatImage.src = "wombat.webp";
+            wombatImage.src = "tuna.webp";
             wombatImage.classList.remove("hidden");
             state = "revived";
           }
@@ -192,4 +192,5 @@
   </script>
 </body>
 </html>
+
 
