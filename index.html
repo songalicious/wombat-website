@@ -2,41 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>hi, hello.</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
+      touch-action: none;
+    }
+    html, body {
       margin: 0;
+      padding: 0;
       background-color: #0d0d0d; 
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      overflow: hidden !important;
       font-family: Arial, sans-serif;
-      position: relative;
+      position: fixed;
+    }
+    .tilt-wrapper {
+      width: 648px;
+      height: 648px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1000px;
     }
     .tilt-container {
-      width: 800px;
-      height: 640px;
-      display: inline-block;
+      width: 648px !important;
+      height: 648px !important;
     }
     .tilt-container img {
       display: block;
-      width: 100%;
-      height: 100%;
+      width: 648px !important;
+      height: 648px !important;
       object-fit: fill; 
       border-radius: 10px;
-      transition: opacity 1s ease; /* smooth fade */
+      transition: opacity 1s ease;
     }
-    .hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .menu-button {
+    .redirect-button {
       position: fixed;
       bottom: 10px;
       right: 10px;
@@ -46,123 +54,60 @@
       border: none;
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       z-index: 100;
-      transition: height 0.2s ease-in-out, border-radius 0.2s ease-in-out;
-    }
-    .menu-button:hover {
-      background-color: #1a1a1a;
-    }
-    .menu-button.active {
-      height: 180px;  
-      border-radius: 25px;
-    }
-
-    .menu-icons {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      width: 50px;
-      height: 180px; 
       display: flex;
-      flex-direction: column; 
-      justify-content: space-around;
+      justify-content: center;
       align-items: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease-in-out;
-      z-index: 101;
-    }
-    .menu-icons.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-    .menu-icon {
-      font-size: 24px;
-      color: white;
+      color: #0d0d0d;
       text-decoration: none;
-      cursor: pointer;
+      outline: none;
     }
   </style>
 </head>
 <body>
-  <div class="tilt-container" data-tilt>
-    <img src="tuna.webp" alt="Wombat" id="wombatImage">
+  <div class="tilt-wrapper" id="scaler">
+    <div class="tilt-container" id="tiltMain" data-tilt>
+      <img src="tuna.webp" alt="Wombat" id="wombatImage">
+    </div>
   </div>
 
-  <button class="menu-button" id="menuButton"></button>
-  
-  <div class="menu-icons" id="menuIcons">
-    <a href="https://songtuah.com/block" class="menu-icon">T</a>
-    <a href="https://songtuah.com/wowzers" class="menu-icon">W</a>
-    <a href="https://desmos.com/graphing" class="menu-icon">D</a>
-  </div>
+  <a href="https://en.wikipedia.org/wiki/Wikipedia:Ignore_all_rules" class="redirect-button" id="fixedButton"></a>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      VanillaTilt.init(document.querySelector(".tilt-container"), {
-        max: 25,  
-        speed: 400,
-        reverse: false 
-      });
-      
-      const menuButton = document.getElementById("menuButton");
-      const menuIcons = document.getElementById("menuIcons");
+      const scaler = document.getElementById("scaler");
+      const tiltMain = document.getElementById("tiltMain");
+      const fixedButton = document.getElementById("fixedButton");
       const wombatImage = document.getElementById("wombatImage");
 
-      menuButton.addEventListener("click", () => {
-        menuButton.classList.toggle("active");
-        menuIcons.classList.toggle("active");
+      VanillaTilt.init(tiltMain, {
+        max: 10,  
+        speed: 400,
+        reverse: false,
+        glare: false
       });
+
+      function lockDimensions() {
+        const zoomLevel = window.devicePixelRatio || 1;
+        const scaleFactor = 1 / zoomLevel;
+        
+        scaler.style.transform = `scaleX(${scaleFactor}) scaleY(1)`;
+        fixedButton.style.transform = `scale(${scaleFactor})`;
+        fixedButton.style.right = `${5 * scaleFactor}px`;
+        fixedButton.style.bottom = `${5 * scaleFactor}px`;
+      }
+
+      window.addEventListener('resize', lockDimensions);
+      lockDimensions();
       
-      document.addEventListener("click", (event) => {
-        if (!menuButton.contains(event.target) && !menuIcons.contains(event.target)) {
-          menuButton.classList.remove("active");
-          menuIcons.classList.remove("active");
-        }
-      });
-
-      let wombatClicks = 0;
-      let tunaClicks = 0;
-      let emptyClicks = 0;
-      let state = "wombat";
-      let confettiPlayed = false;
-
       wombatImage.addEventListener("click", () => {
-        if (state === "wombat") {
-          wombatClicks++;
-          if (wombatClicks >= 5) {
-            wombatImage.src = "tuna.webp";
-            state = "tuna";
-            if (!confettiPlayed) {
-              launchConfetti();
-              confettiPlayed = true;
-            }
-          }
-        } else if (state === "tuna") {
-          tunaClicks++;
-          if (tunaClicks >= 3) {
-            wombatImage.classList.add("hidden");
-            state = "gone";
-          }
-        }
-      });
-
-      document.addEventListener("click", (event) => {
-        if (state === "gone" && !wombatImage.contains(event.target)) {
-          emptyClicks++;
-          if (emptyClicks >= 10) {
-            wombatImage.src = "tuna.webp";
-            wombatImage.classList.remove("hidden");
-            state = "revived";
-          }
-        }
+        launchConfetti();
       });
 
       function launchConfetti() {
-        var duration = 15 * 250;
+        var duration = 5 * 100;
         var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1 };
 
         function randomInRange(min, max) {
           return Math.random() * (max - min) + min;
@@ -170,10 +115,7 @@
 
         var interval = setInterval(function() {
           var timeLeft = animationEnd - Date.now();
-
-          if (timeLeft <= 0) {
-            return clearInterval(interval);
-          }
+          if (timeLeft <= 0) return clearInterval(interval);
 
           var particleCount = 150 * (timeLeft / duration);
           confetti({ 
@@ -192,7 +134,3 @@
   </script>
 </body>
 </html>
-
-
-
-
