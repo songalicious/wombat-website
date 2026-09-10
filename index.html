@@ -1,136 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>hi, hello.</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      touch-action: none;
-    }
-    html, body {
-      margin: 0;
-      padding: 0;
-      background-color: #0d0d0d; 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-      overflow: hidden !important;
-      font-family: Arial, sans-serif;
-      position: fixed;
-    }
-    .tilt-wrapper {
-      width: 648px;
-      height: 648px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      perspective: 1000px;
-    }
-    .tilt-container {
-      width: 648px !important;
-      height: 648px !important;
-    }
-    .tilt-container img {
-      display: block;
-      width: 648px !important;
-      height: 648px !important;
-      object-fit: fill; 
-      border-radius: 10px;
-      transition: opacity 1s ease;
-    }
-    .redirect-button {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      width: 50px;
-      height: 50px;
-      background-color: #0d0d0d; 
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 100;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #0d0d0d;
-      text-decoration: none;
-      outline: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>hi, hello.</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+*{
+box-sizing:border-box;
+touch-action:none;
+-webkit-user-select:none;
+user-select:none;
+}
+html,body{
+margin:0;
+padding:0;
+background-color:#0d0d0d;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100%;
+width:100%;
+overflow:hidden!important;
+font-family:Arial,sans-serif;
+position:fixed;
+}
+.tilt-wrapper{
+width:648px;
+height:648px;
+display:flex;
+justify-content:center;
+align-items:center;
+perspective:1000px;
+}
+.tilt-container{
+width:648px!important;
+height:648px!important;
+}
+.tilt-container img{
+display:block;
+width:648px!important;
+height:648px!important;
+object-fit:fill;
+border-radius:10px;
+transition:opacity 1s ease;
+-webkit-user-drag:none;
+user-drag:none;
+-webkit-user-select:none;
+user-select:none;
+pointer-events:auto;
+}
+.redirect-button{
+position:fixed;
+bottom:10px;
+right:10px;
+width:50px;
+height:50px;
+background-color:#0d0d0d;
+border:none;
+border-radius:50%;
+cursor:pointer;
+z-index:100;
+display:flex;
+justify-content:center;
+align-items:center;
+color:#0d0d0d;
+text-decoration:none;
+outline:none;
+}
+</style>
 </head>
 <body>
-  <div class="tilt-wrapper" id="scaler">
-    <div class="tilt-container" id="tiltMain" data-tilt>
-      <img src="tuna.webp" alt="Wombat" id="wombatImage">
-    </div>
-  </div>
-
-  <a href="https://en.wikipedia.org/wiki/Wikipedia:Ignore_all_rules" class="redirect-button" id="fixedButton"></a>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const scaler = document.getElementById("scaler");
-      const tiltMain = document.getElementById("tiltMain");
-      const fixedButton = document.getElementById("fixedButton");
-      const wombatImage = document.getElementById("wombatImage");
-
-      VanillaTilt.init(tiltMain, {
-        max: 10,  
-        speed: 400,
-        reverse: false,
-        glare: false
-      });
-
-      function lockDimensions() {
-        const zoomLevel = window.devicePixelRatio || 1;
-        const scaleFactor = 1 / zoomLevel;
-        
-        scaler.style.transform = `scaleX(${scaleFactor}) scaleY(1)`;
-        fixedButton.style.transform = `scale(${scaleFactor})`;
-        fixedButton.style.right = `${5 * scaleFactor}px`;
-        fixedButton.style.bottom = `${5 * scaleFactor}px`;
-      }
-
-      window.addEventListener('resize', lockDimensions);
-      lockDimensions();
-      
-      wombatImage.addEventListener("click", () => {
-        launchConfetti();
-      });
-
-      function launchConfetti() {
-        var duration = 5 * 100;
-        var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1 };
-
-        function randomInRange(min, max) {
-          return Math.random() * (max - min) + min;
-        }
-
-        var interval = setInterval(function() {
-          var timeLeft = animationEnd - Date.now();
-          if (timeLeft <= 0) return clearInterval(interval);
-
-          var particleCount = 150 * (timeLeft / duration);
-          confetti({ 
-            ...defaults, 
-            particleCount, 
-            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } 
-          });
-          confetti({ 
-            ...defaults, 
-            particleCount, 
-            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } 
-          });
-        }, 250);
-      }
-    });
-  </script>
+<div class="tilt-wrapper" id="scaler">
+<div class="tilt-container" id="tiltMain" data-tilt>
+<img src="tuna.webp" alt="Wombat" id="wombatImage" draggable="false">
+</div>
+</div>
+<a href="https://en.wikipedia.org/wiki/Wikipedia:Ignore_all_rules" class="redirect-button" id="fixedButton"></a>
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+const scaler=document.getElementById("scaler");
+const tiltMain=document.getElementById("tiltMain");
+const fixedButton=document.getElementById("fixedButton");
+const wombatImage=document.getElementById("wombatImage");
+VanillaTilt.init(tiltMain,{
+max:10,
+speed:400,
+reverse:false,
+glare:false
+});
+function lockDimensions(){
+const zoomLevel=window.devicePixelRatio||1;
+const scaleFactor=1/zoomLevel;
+scaler.style.transform=`scaleX(${scaleFactor}) scaleY(1)`;
+fixedButton.style.transform=`scale(${scaleFactor})`;
+fixedButton.style.right=`${5*scaleFactor}px`;
+fixedButton.style.bottom=`${5*scaleFactor}px`;
+}
+window.addEventListener('resize',lockDimensions);
+lockDimensions();
+const isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)||
+('ontouchstart' in window)||
+(navigator.maxTouchPoints>0);
+const clickThreshold=Math.floor(Math.random()*3)+2;
+let clickCount=0;
+wombatImage.addEventListener("click",()=>{
+launchConfetti();
+if(!isMobile){
+clickCount++;
+if(clickCount>=clickThreshold){
+window.location.href="https://songtuah.com/wowzers";
+}
+}
+});
+wombatImage.addEventListener("dragstart",e=>{e.preventDefault();});
+function launchConfetti(){
+var duration=5*100;
+var animationEnd=Date.now()+duration;
+var defaults={startVelocity:30,spread:360,ticks:60,zIndex:1};
+function randomInRange(min,max){
+return Math.random()*(max-min)+min;
+}
+var interval=setInterval(function(){
+var timeLeft=animationEnd-Date.now();
+if(timeLeft<=0)return clearInterval(interval);
+var particleCount=150*(timeLeft/duration);
+confetti({
+...defaults,
+particleCount,
+origin:{x:randomInRange(0.1,0.3),y:Math.random()-0.2}
+});
+confetti({
+...defaults,
+particleCount,
+origin:{x:randomInRange(0.7,0.9),y:Math.random()-0.2}
+});
+},250);
+}
+});
+</script>
 </body>
 </html>
